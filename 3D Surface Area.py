@@ -6,7 +6,7 @@ import random
 import re
 import sys
 
-#
+
 # Complete the 'surfaceArea' function below.
 #
 # The function is expected to return an INTEGER.
