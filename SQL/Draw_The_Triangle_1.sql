@@ -1,0 +1,9 @@
+WITH RECURSIVE PatternCTE AS (
+  SELECT REPEAT('* ', 20) AS Pattern
+  UNION ALL
+  SELECT TRIM(SUBSTRING(Pattern FROM 1 FOR LENGTH(Pattern) - 2)) AS Pattern
+  FROM PatternCTE
+  WHERE LENGTH(Pattern) > 0
+)
+SELECT Pattern
+FROM PatternCTE;
