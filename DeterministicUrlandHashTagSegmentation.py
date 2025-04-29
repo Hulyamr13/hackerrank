@@ -2,45 +2,60 @@ import re
 
 
 def split_words(line, tokens, regexps):
-    #print('line', line, 'tokens', tokens)
     if not line:
         return tokens
-    else:
-        for regexp in regexps:
-            m = regexp.match(line)
-            if m:
-                matched = m.group(0)
-                suffix = line[len(matched):]
-                new_tokens = tokens + [matched]
-                ans = split_words(suffix, new_tokens, regexps)
-                if ans:
-                    return ans
-        return None
+
+    for regexp in regexps:
+        match = regexp.match(line)
+        if match:
+            matched = match.group(0)
+            suffix = line[len(matched):]
+            new_tokens = tokens + [matched]
+            result = split_words(suffix, new_tokens, regexps)
+            if result:
+                return result
+    return None
+
+
+def load_regexps_from_file(filename):
+    with open(filename, encoding='utf-8') as f:
+        words = re.split(r'[\n\s]+', f.read())
+        sorted_words = sorted(filter(None, words), key=len, reverse=True)
+
+    regexps = [re.compile(r'\d+(?:\.\d+)?')]
+    regexps.extend(re.compile(re.escape(w), flags=re.IGNORECASE) for w in sorted_words)
+    return regexps
+
+
+def extract_line(raw_data):
+    if raw_data.startswith('#'):
+        return raw_data[1:]
+    match = re.search(r'(?:www\.)?(\w+)\.', raw_data)
+    return match.group(1) if match else ''
 
 
 def main():
-    with open('words.txt') as f:
-        regexps = [re.compile(r'\d+(?:\.\d+)?')]
-        for w in sorted(re.split(r'[\n ]+', f.read()), key=len, reverse=True):
-            if w:
-                regexps.append(re.compile(w, flags=re.IGNORECASE))
+    regexps = load_regexps_from_file('words.txt')
 
+    try:
         test_num = int(input())
-        for n in range(test_num):
-            raw_data = input()
-            line = ''
-            if raw_data[0] == '#':
-                line = raw_data[1:]
-            else:
-                m = re.findall(r'(?:www\.)?(\w+?)\..*', raw_data)
-                if m:
-                    line = m[0]
-            ans = split_words(line, [], regexps)
-            if ans:
-                print(' '.join(ans))
-            else:
-                print(raw_data)
+    except ValueError:
+        return
+
+    for _ in range(test_num):
+        raw_data = input().strip()
+        line = extract_line(raw_data)
+        if not line:
+            print(raw_data)
+            continue
+
+        result = split_words(line, [], regexps)
+        if result:
+            print(' '.join(result))
+        else:
+            print(raw_data)
 
 
 if __name__ == '__main__':
     main()
+
